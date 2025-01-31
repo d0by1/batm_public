@@ -61,7 +61,7 @@ public class CoinbaseExchange implements IRateSourceAdvanced, IExchangeAdvanced 
     private static final Set<String> FIAT_CURRENCIES = new HashSet<>();
     private static final Set<String> CRYPTO_CURRENCIES = new HashSet<>();
 
-    private ICoinbaseAPI api;
+    private ICoinbaseAPILegacy api;
 
     private String apiKey;
     private String secretKey;
@@ -102,7 +102,7 @@ public class CoinbaseExchange implements IRateSourceAdvanced, IExchangeAdvanced 
             CompatSSLSocketFactory socketFactory = new CompatSSLSocketFactory(sslcontext.getSocketFactory());
             config.setSslSocketFactory(socketFactory);
             config.setIgnoreHttpErrorCodes(true);
-            api = RestProxyFactory.createProxy(ICoinbaseAPI.class, "https://api.coinbase.com", config);
+            api = RestProxyFactory.createProxy(ICoinbaseAPILegacy.class, "https://api.coinbase.com", config);
         } catch (NoSuchAlgorithmException | KeyManagementException e) {
             log.error("constructor - Cannot create instance.", e);
         }
@@ -669,6 +669,7 @@ public class CoinbaseExchange implements IRateSourceAdvanced, IExchangeAdvanced 
 
     @Override
     public String toString() {
+        // TODO BATM-7123: Remove apiKey from toString
         return String.format("accountName = %s, preferedFiatCurrency = %s, apiKey = %s",
             accountName, preferedFiatCurrency, apiKey);
     }
