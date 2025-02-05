@@ -1,13 +1,19 @@
 package com.generalbytes.batm.server.extensions.extra.bitcoin;
 
 import com.generalbytes.batm.server.extensions.IExchange;
+import com.generalbytes.batm.server.extensions.IRateSource;
 import com.generalbytes.batm.server.extensions.IWallet;
 import com.generalbytes.batm.server.extensions.TestExtensionContext;
 import com.generalbytes.batm.server.extensions.extra.bitcoin.coinbase.api.CoinbaseApiFactory;
 import com.generalbytes.batm.server.extensions.extra.bitcoin.coinbase.api.CoinbaseApiWrapperLegacy;
+import com.generalbytes.batm.server.extensions.extra.bitcoin.coinbase.api.CoinbaseV2ApiWrapperLegacy;
 import com.generalbytes.batm.server.extensions.extra.bitcoin.exchanges.coinbase.CoinbaseExchange;
 import com.generalbytes.batm.server.extensions.extra.bitcoin.exchanges.coinbase.ICoinbaseAPILegacy;
 import com.generalbytes.batm.server.extensions.extra.bitcoin.wallets.bitgo.v2.BitgoWallet;
+import com.generalbytes.batm.server.extensions.extra.bitcoin.wallets.coinbase.v2.CoinbaseV2RateSource;
+import com.generalbytes.batm.server.extensions.extra.bitcoin.wallets.coinbase.v2.CoinbaseWalletV2;
+import com.generalbytes.batm.server.extensions.extra.bitcoin.wallets.coinbase.v2.CoinbaseWalletV2WithUniqueAddresses;
+import com.generalbytes.batm.server.extensions.extra.bitcoin.wallets.coinbase.v2.ICoinbaseV2APILegacy;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.MockedStatic;
@@ -340,7 +346,7 @@ public class BitcoinExtensionTest {
             assertTrue(exchange instanceof CoinbaseExchange);
             CoinbaseExchange coinbaseExchange = (CoinbaseExchange) exchange;
             assertEquals(accountName, coinbaseExchange.getAccountName());
-            assertEquals(preferredFiatCurrency, coinbaseExchange.getPreferredFiatCurrency());
+            assertEquals(preferredFiatCurrency, coinbaseExchange.getPreferedFiatCurrency());
             assertEquals(paymentMethodName, coinbaseExchange.getPaymentMethodName());
             assertTrue(coinbaseExchange.getApi() instanceof CoinbaseApiWrapperLegacy);
             mockedApiFactory.verify(CoinbaseApiFactory::createCoinbaseApiLegacy);
@@ -373,6 +379,85 @@ public class BitcoinExtensionTest {
         IExchange exchange = bitcoinExtension.createExchange(paramString);
 
         assertNull(exchange);
+    }
+
+    @Test
+    public void testCreateWallet_validLegacyCoinbase() {
+        // accountName is optional
+        doTestCreateWallet_validLegacyCoinbase("coinbasewallet2", CoinbaseWalletV2.class, null, null);
+        doTestCreateWallet_validLegacyCoinbase("coinbasewallet2", CoinbaseWalletV2.class, null, "");
+        doTestCreateWallet_validLegacyCoinbase("coinbasewallet2", CoinbaseWalletV2.class, null, "   ");
+        doTestCreateWallet_validLegacyCoinbase("coinbasewallet2", CoinbaseWalletV2.class, "accountName", "accountName");
+        doTestCreateWallet_validLegacyCoinbase("coinbasewallet2noforward", CoinbaseWalletV2WithUniqueAddresses.class, null, null);
+        doTestCreateWallet_validLegacyCoinbase("coinbasewallet2noforward", CoinbaseWalletV2WithUniqueAddresses.class, null, "");
+        doTestCreateWallet_validLegacyCoinbase("coinbasewallet2noforward", CoinbaseWalletV2WithUniqueAddresses.class, null, "   ");
+        doTestCreateWallet_validLegacyCoinbase("coinbasewallet2noforward", CoinbaseWalletV2WithUniqueAddresses.class, "accountName", "accountName");
+    }
+
+    private void doTestCreateWallet_validLegacyCoinbase(String prefix,
+                                                        Class<?> walletClass,
+                                                        String expectedAccountName,
+                                                        String accountName) {
+        String apiKey = "apiKey";
+        String secretKey = "secretKey";
+        String paramString = getCoinbaseParams(prefix, apiKey, secretKey, accountName, null, null);
+
+        BitcoinExtension bitcoinExtension = new BitcoinExtension();
+        bitcoinExtension.init(new TestExtensionContext());
+
+        try (MockedStatic<CoinbaseApiFactory> mockedApiFactory = mockStatic(CoinbaseApiFactory.class)) {
+            mockedApiFactory.when(CoinbaseApiFactory::createCoinbaseV2ApiLegacy).thenReturn(mock(ICoinbaseV2APILegacy.class));
+
+            IWallet wallet = bitcoinExtension.createWallet(paramString, null);
+
+            assertNotNull(wallet);
+            assertTrue(walletClass.isAssignableFrom(walletClass));
+            CoinbaseWalletV2 coinbaseWallet = (CoinbaseWalletV2) wallet;
+            assertEquals(expectedAccountName, coinbaseWallet.getAccountName());
+            assertTrue(coinbaseWallet.getApi() instanceof CoinbaseV2ApiWrapperLegacy);
+            mockedApiFactory.verify(CoinbaseApiFactory::createCoinbaseV2ApiLegacy);
+        }
+    }
+
+    @Test
+    public void testCreateWallet_invalidLegacyCoinbase() {
+        // Missing mandatory parameter: secretKey
+        doTestCreateWallet_invalidLegacyCoinbase("coinbasewallet2:apiKey");
+        // Missing mandatory parameters: apiKey, secretKey
+        doTestCreateWallet_invalidLegacyCoinbase("coinbasewallet2");
+    }
+
+    private void doTestCreateWallet_invalidLegacyCoinbase(String paramString) {
+        BitcoinExtension bitcoinExtension = new BitcoinExtension();
+        bitcoinExtension.init(new TestExtensionContext());
+
+        IWallet wallet = bitcoinExtension.createWallet(paramString, null);
+
+        assertNull(wallet);
+    }
+
+    @Test
+    public void testCreateRateSource_validLegacyCoinbase() {
+        doTestCreateRateSource_validLegacyCoinbase("USD", "coinbasers");
+        doTestCreateRateSource_validLegacyCoinbase("CZK", "coinbasers:CZK");
+    }
+
+    private void doTestCreateRateSource_validLegacyCoinbase(String expectedFiatCurrency, String paramString) {
+        BitcoinExtension bitcoinExtension = new BitcoinExtension();
+        bitcoinExtension.init(new TestExtensionContext());
+
+        try (MockedStatic<CoinbaseApiFactory> mockedApiFactory = mockStatic(CoinbaseApiFactory.class)) {
+            mockedApiFactory.when(CoinbaseApiFactory::createCoinbaseV2ApiLegacy).thenReturn(mock(ICoinbaseV2APILegacy.class));
+
+            IRateSource rateSource = bitcoinExtension.createRateSource(paramString);
+
+            assertNotNull(rateSource);
+            assertTrue(rateSource instanceof CoinbaseV2RateSource);
+            CoinbaseV2RateSource coinbaseRateSource = (CoinbaseV2RateSource) rateSource;
+            assertEquals(expectedFiatCurrency, coinbaseRateSource.getPreferredFiatCurrency());
+            assertTrue(coinbaseRateSource.getApi() instanceof CoinbaseV2ApiWrapperLegacy);
+            mockedApiFactory.verify(CoinbaseApiFactory::createCoinbaseV2ApiLegacy);
+        }
     }
 
 }
