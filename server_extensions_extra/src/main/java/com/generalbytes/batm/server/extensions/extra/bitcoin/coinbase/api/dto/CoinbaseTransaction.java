@@ -21,42 +21,53 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * Holds information about a Coinbase account.
+ * Represents a Transaction at Coinbase.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class CoinbaseAccount {
+public class CoinbaseTransaction {
 
     private String id;
-    private String name;
     private String type;
-    private CoinbaseCurrency currency;
-    private CoinbaseAmount balance;
+    private String status;
+    /**
+     * Amount of any supported digital asset.
+     * Value is negative to indicate the debiting of funds for the following transaction type cases:
+     * - advanced_trade_fill, sell
+     * - pro_deposit
+     */
+    private CoinbaseAmount amount;
+    /**
+     * Amount in user's native currency.
+     * Value is negative to indicate the debiting of funds for the following transaction type cases:
+     * - advanced_trade_fill, sell
+     * - pro_deposit
+     */
+    @JsonProperty("native_amount")
+    private CoinbaseAmount nativeAmount;
+    /**
+     * User defined description
+     */
+    private String description;
     @JsonProperty("created_at")
     private String createdAt;
     @JsonProperty("updated_at")
     private String updatedAt;
-    private boolean primary;
     /**
-     * Name of the resource. Constant "account" for accounts.
+     * Name of the resource. Constant "transaction" for transaction.
      */
-    private final String resource = "account";
+    private final String resource = "transaction";
     @JsonProperty("resource_path")
     private String resourcePath;
 
+    /**
+     * @return ID of the transaction.
+     */
     public String getId() {
         return id;
     }
 
     public void setId(String id) {
         this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public String getType() {
@@ -67,30 +78,36 @@ public class CoinbaseAccount {
         this.type = type;
     }
 
-    /**
-     * Get the cryptocurrency that this account holds.
-     *
-     * @return The cryptocurrency.
-     */
-    public CoinbaseCurrency getCurrency() {
-        return currency;
+    public String getStatus() {
+        return status;
     }
 
-    public void setCurrency(CoinbaseCurrency currency) {
-        this.currency = currency;
+    public void setStatus(String status) {
+        this.status = status;
     }
 
-    /**
-     * Get the balance of this account. This is the amount of cryptocurrency it has.
-     *
-     * @return The balance.
-     */
-    public CoinbaseAmount getBalance() {
-        return balance;
+    public CoinbaseAmount getAmount() {
+        return amount;
     }
 
-    public void setBalance(CoinbaseAmount balance) {
-        this.balance = balance;
+    public void setAmount(CoinbaseAmount amount) {
+        this.amount = amount;
+    }
+
+    public CoinbaseAmount getNativeAmount() {
+        return nativeAmount;
+    }
+
+    public void setNativeAmount(CoinbaseAmount nativeAmount) {
+        this.nativeAmount = nativeAmount;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public String getCreatedAt() {
@@ -107,17 +124,6 @@ public class CoinbaseAccount {
 
     public void setUpdatedAt(String updatedAt) {
         this.updatedAt = updatedAt;
-    }
-
-    /**
-     * @return true if this is the primary account for the cryptocurrency it holds, false otherwise.
-     */
-    public boolean isPrimary() {
-        return primary;
-    }
-
-    public void setPrimary(boolean primary) {
-        this.primary = primary;
     }
 
     public String getResource() {

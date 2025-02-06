@@ -18,41 +18,25 @@
 package com.generalbytes.batm.server.extensions.extra.bitcoin.coinbase.api.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * Represents the current time of the Coinbase API server.
+ * Data about a created order.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class CoinbaseServerTime {
+public class CoinbaseCreateOrderSuccessResponse {
 
-    private String iso;
-    private long epoch;
+    @JsonProperty("order_id")
+    private String orderId;
 
     /**
-     * @return The server time in iso format.
+     * @return ID of the created order.
      */
-    public String getIso() {
-        return iso;
+    public String getOrderId() {
+        return orderId;
     }
 
-    /**
-     * @param iso The server time in iso format.
-     */
-    public void setIso(String iso) {
-        this.iso = iso;
-    }
-
-    /**
-     * @return The server time in epoch format.
-     */
-    public long getEpoch() {
-        return epoch;
-    }
-
-    /**
-     * @param epoch The server time in epoch format.
-     */
-    public void setEpoch(long epoch) {
-        this.epoch = epoch;
+    public void setOrderId(String orderId) {
+        this.orderId = orderId;
     }
 }

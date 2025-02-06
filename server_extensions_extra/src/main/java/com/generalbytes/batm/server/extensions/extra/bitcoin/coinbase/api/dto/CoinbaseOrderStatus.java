@@ -17,42 +17,17 @@
  ************************************************************************************/
 package com.generalbytes.batm.server.extensions.extra.bitcoin.coinbase.api.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
 /**
- * Represents the current time of the Coinbase API server.
+ * All possible statuses of Orders at Coinbase.
  */
-@JsonIgnoreProperties(ignoreUnknown = true)
-public class CoinbaseServerTime {
-
-    private String iso;
-    private long epoch;
-
-    /**
-     * @return The server time in iso format.
-     */
-    public String getIso() {
-        return iso;
-    }
-
-    /**
-     * @param iso The server time in iso format.
-     */
-    public void setIso(String iso) {
-        this.iso = iso;
-    }
-
-    /**
-     * @return The server time in epoch format.
-     */
-    public long getEpoch() {
-        return epoch;
-    }
-
-    /**
-     * @param epoch The server time in epoch format.
-     */
-    public void setEpoch(long epoch) {
-        this.epoch = epoch;
-    }
+public enum CoinbaseOrderStatus {
+    PENDING,
+    OPEN,
+    FILLED,
+    CANCELLED,
+    EXPIRED,
+    FAILED,
+    UNKNOWN_ORDER_STATUS,
+    QUEUED,
+    CANCEL_QUEUED
 }

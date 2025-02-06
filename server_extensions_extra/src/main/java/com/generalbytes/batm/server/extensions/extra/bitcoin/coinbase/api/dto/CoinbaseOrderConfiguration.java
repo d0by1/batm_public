@@ -17,42 +17,23 @@
  ************************************************************************************/
 package com.generalbytes.batm.server.extensions.extra.bitcoin.coinbase.api.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * Represents the current time of the Coinbase API server.
+ * The configuration of the order (e.g., the order type, size, etc.).
  */
-@JsonIgnoreProperties(ignoreUnknown = true)
-public class CoinbaseServerTime {
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class CoinbaseOrderConfiguration {
 
-    private String iso;
-    private long epoch;
+    @JsonProperty("market_market_ioc")
+    private CoinbaseMarketOrderConfiguration marketOrderConfiguration;
 
-    /**
-     * @return The server time in iso format.
-     */
-    public String getIso() {
-        return iso;
+    public CoinbaseMarketOrderConfiguration getMarketOrderConfiguration() {
+        return marketOrderConfiguration;
     }
 
-    /**
-     * @param iso The server time in iso format.
-     */
-    public void setIso(String iso) {
-        this.iso = iso;
-    }
-
-    /**
-     * @return The server time in epoch format.
-     */
-    public long getEpoch() {
-        return epoch;
-    }
-
-    /**
-     * @param epoch The server time in epoch format.
-     */
-    public void setEpoch(long epoch) {
-        this.epoch = epoch;
+    public void setMarketOrderConfiguration(CoinbaseMarketOrderConfiguration marketOrderConfiguration) {
+        this.marketOrderConfiguration = marketOrderConfiguration;
     }
 }
