@@ -15,6 +15,7 @@ import com.generalbytes.batm.server.extensions.extra.bitcoin.coinbase.api.dto.Co
 import com.generalbytes.batm.server.extensions.extra.bitcoin.coinbase.api.dto.CoinbasePagination;
 import com.generalbytes.batm.server.extensions.extra.bitcoin.coinbase.api.dto.CoinbaseSendCoinsRequest;
 import com.generalbytes.batm.server.extensions.extra.bitcoin.coinbase.api.dto.CoinbaseTransaction;
+import com.generalbytes.batm.server.extensions.extra.bitcoin.coinbase.api.dto.CoinbaseTransactionAmount;
 import com.generalbytes.batm.server.extensions.extra.bitcoin.coinbase.api.dto.CoinbaseTransactionResponse;
 import com.generalbytes.batm.server.extensions.extra.bitcoin.coinbase.api.dto.CoinbaseTransactionsResponse;
 import com.generalbytes.batm.server.extensions.extra.bitcoin.wallets.coinbase.v2.dto.CBAccount;
@@ -427,7 +428,7 @@ public class CoinbaseV2ApiMapperTest {
         assertEquals(legacySendRequest.getAmount(), request.getAmount());
         assertEquals(legacySendRequest.getCurrency(), request.getCurrency());
         assertEquals(legacySendRequest.getType(), request.getType());
-        assertEquals(legacySendRequest.getIdem(), request.getIdem());
+        assertEquals("7adab921-d7f8-3971-993c-3c3e936c67e5", request.getIdem());
         assertEquals(legacySendRequest.getDescription(), request.getDescription());
     }
 
@@ -522,13 +523,13 @@ public class CoinbaseV2ApiMapperTest {
 
     @Test
     public void testMapTransactionsResponseToLegacyPaginatedResponse() {
-        CoinbaseAmount amount = new CoinbaseAmount();
+        CoinbaseTransactionAmount amount = new CoinbaseTransactionAmount();
         amount.setCurrency("currency");
-        amount.setAmount(BigDecimal.TEN);
+        amount.setValue(BigDecimal.TEN);
 
-        CoinbaseAmount nativeAmount = new CoinbaseAmount();
+        CoinbaseTransactionAmount nativeAmount = new CoinbaseTransactionAmount();
         nativeAmount.setCurrency("native_currency");
-        nativeAmount.setAmount(BigDecimal.valueOf(100));
+        nativeAmount.setValue(BigDecimal.valueOf(100));
 
         CoinbaseTransaction transaction = new CoinbaseTransaction();
         transaction.setId("id");
@@ -560,10 +561,10 @@ public class CoinbaseV2ApiMapperTest {
         assertEquals(transaction.getStatus(), legacyResponse.getData().get(0).getStatus());
         assertEquals(transaction.getDescription(), legacyResponse.getData().get(0).getDescription());
         assertNotNull(legacyResponse.getData().get(0).getAmount());
-        assertEquals(amount.getAmount(), legacyResponse.getData().get(0).getAmount().getAmount());
+        assertEquals(amount.getValue(), legacyResponse.getData().get(0).getAmount().getAmount());
         assertEquals(amount.getCurrency(), legacyResponse.getData().get(0).getAmount().getCurrency());
         assertNotNull(legacyResponse.getData().get(0).getNative_amount());
-        assertEquals(nativeAmount.getAmount(), legacyResponse.getData().get(0).getNative_amount().getAmount());
+        assertEquals(nativeAmount.getValue(), legacyResponse.getData().get(0).getNative_amount().getAmount());
         assertEquals(nativeAmount.getCurrency(), legacyResponse.getData().get(0).getNative_amount().getCurrency());
         assertEquals(transaction.getCreatedAt(), legacyResponse.getData().get(0).getCreated_at());
         assertEquals(transaction.getUpdatedAt(), legacyResponse.getData().get(0).getUpdated_at());

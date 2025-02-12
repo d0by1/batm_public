@@ -17,29 +17,30 @@
  ************************************************************************************/
 package com.generalbytes.batm.server.extensions.extra.bitcoin.coinbase.api.dto;
 
+import java.math.BigDecimal;
+
 /**
- * Represents possible types of prices.
+ * Represents an amount and a currency.
  */
-public enum CoinbasePriceType {
-    BUY("buy"),
-    SELL("sell"),
-    /**
-     * The current market price. This is usually somewhere in between the buy and sell prices.
-     */
-    SPOT("spot");
+public class CoinbaseTransactionAmount {
 
-    private final String name;
+    private BigDecimal value;
+    private String currency;
 
-    CoinbasePriceType(String name) {
-        this.name = name;
+    public BigDecimal getValue() {
+        return value;
     }
 
-    /**
-     * Get the name of this type used in Coinbase API.
-     *
-     * @return The name.
-     */
-    public String getName() {
-        return name;
+    public void setValue(BigDecimal value) {
+        this.value = value;
     }
+
+    public String getCurrency() {
+        return currency;
+    }
+
+    public void setCurrency(String currency) {
+        this.currency = currency;
+    }
+
 }

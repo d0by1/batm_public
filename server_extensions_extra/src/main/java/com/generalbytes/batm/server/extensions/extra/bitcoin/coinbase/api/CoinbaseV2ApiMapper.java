@@ -32,6 +32,7 @@ import com.generalbytes.batm.server.extensions.extra.bitcoin.coinbase.api.dto.Co
 import com.generalbytes.batm.server.extensions.extra.bitcoin.coinbase.api.dto.CoinbasePagination;
 import com.generalbytes.batm.server.extensions.extra.bitcoin.coinbase.api.dto.CoinbaseSendCoinsRequest;
 import com.generalbytes.batm.server.extensions.extra.bitcoin.coinbase.api.dto.CoinbaseTransaction;
+import com.generalbytes.batm.server.extensions.extra.bitcoin.coinbase.api.dto.CoinbaseTransactionAmount;
 import com.generalbytes.batm.server.extensions.extra.bitcoin.coinbase.api.dto.CoinbaseTransactionResponse;
 import com.generalbytes.batm.server.extensions.extra.bitcoin.coinbase.api.dto.CoinbaseTransactionsResponse;
 import com.generalbytes.batm.server.extensions.extra.bitcoin.wallets.coinbase.v2.dto.CBAccount;
@@ -57,12 +58,17 @@ import com.generalbytes.batm.server.extensions.extra.bitcoin.wallets.coinbase.v2
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
  * Mapper between new and legacy Coinbase V2 API DTOs.
  */
-public class CoinbaseV2ApiMapper {
+public final class CoinbaseV2ApiMapper {
+
+    private CoinbaseV2ApiMapper() {
+        throw new IllegalStateException("Utility class");
+    }
 
     /**
      * Map {@link CoinbaseApiException} to a legacy {@link CBResponse}.
@@ -308,7 +314,13 @@ public class CoinbaseV2ApiMapper {
         request.setTo(legacyRequest.getTo());
         request.setAmount(legacyRequest.getAmount());
         request.setCurrency(legacyRequest.getCurrency());
-        request.setIdem(legacyRequest.getIdem());
+        // Convert the legacy idempotency key (idem) from a string to a UUID.
+        //
+        // In the original CoinbaseWalletV2 implementation, the transaction's remoteId was used directly as the idempotency key.
+        // However, the new API requires this key to be in UUIDv4 format.
+        // To preserve idempotency, we convert the remoteId string into a UUID deterministically using a name-based UUID algorithm.
+        // This means that for the same legacy idem value, the generated UUID will always be the same.
+        request.setIdem(UUID.nameUUIDFromBytes(legacyRequest.getIdem().getBytes()).toString());
         request.setDescription(legacyRequest.getDescription());
         return request;
     }
@@ -397,14 +409,25 @@ public class CoinbaseV2ApiMapper {
         legacyTransaction.setId(transaction.getId());
         legacyTransaction.setType(transaction.getType());
         legacyTransaction.setStatus(transaction.getStatus());
-        legacyTransaction.setAmount(mapAmountToLegacyBalance(transaction.getAmount()));
-        legacyTransaction.setNative_amount(mapAmountToLegacyBalance(transaction.getNativeAmount()));
+        legacyTransaction.setAmount(mapTransactionAmountToLegacyBalance(transaction.getAmount()));
+        legacyTransaction.setNative_amount(mapTransactionAmountToLegacyBalance(transaction.getNativeAmount()));
         legacyTransaction.setDescription(transaction.getDescription());
         legacyTransaction.setCreated_at(transaction.getCreatedAt());
         legacyTransaction.setUpdated_at(transaction.getUpdatedAt());
         legacyTransaction.setResource(transaction.getResource());
         legacyTransaction.setResource_path(transaction.getResourcePath());
         return legacyTransaction;
+    }
+
+    private static CBBalance mapTransactionAmountToLegacyBalance(CoinbaseTransactionAmount transactionAmount) {
+        if (transactionAmount == null) {
+            return null;
+        }
+
+        CBBalance legacyBalance = new CBBalance();
+        legacyBalance.setCurrency(transactionAmount.getCurrency());
+        legacyBalance.setAmount(transactionAmount.getValue());
+        return legacyBalance;
     }
 
     /**
