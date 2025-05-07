@@ -10,8 +10,7 @@ import com.generalbytes.batm.server.extensions.extra.nano.rpc.RpcException;
 import com.generalbytes.batm.server.extensions.extra.nano.rpc.dto.AccountBalance;
 import com.generalbytes.batm.server.extensions.extra.nano.rpc.dto.Block;
 import com.generalbytes.batm.server.extensions.payment.ReceivedAmount;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -27,9 +26,9 @@ import java.util.UUID;
 /**
  * @author Karl Oczadly
  */
+@Slf4j
 public class NanoNodeWallet implements INanoRpcWallet, IGeneratesNewDepositCryptoAddress, IWallet, IQueryableWallet {
 
-    private static final Logger log = LoggerFactory.getLogger(NanoNodeWallet.class);
     private static final String RECEIVE_TRANSACTION_TYPE = "receive";
 
     private final NanoExtensionContext context;
